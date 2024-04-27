@@ -14,7 +14,7 @@ function FormInscricao() {
   const [dataAtual, setDataAtual] = useState('');
   const [cargosDisponiveis, setCargosDisponiveis] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
-  const [inscricoes, setInscricoes] = useState([]); // Estado para armazenar as inscrições existentes
+  const [inscricoes, setInscricoes] = useState([]); 
 
   useEffect(() => {
     const currentDate = new Date();
@@ -64,7 +64,6 @@ function FormInscricao() {
     const cpf = candidatoSelecionado.cpf || '';
     const finalData = data || dataAtual;
 
-    // Verificar se o candidato já está inscrito em alguma das vagas selecionadas
     const candidaturaExistente = inscricoes.find(candidatura => candidatura.cpf === cpf && vagasSelecionadas.some(vaga => candidatura.vagas.find(v => v.id_vaga === vaga.id)));
     if (candidaturaExistente) {
       const vagaInscrita = candidaturaExistente.vagas.find(vaga => vagasSelecionadas.some(v => v.id === vaga.id_vaga));
@@ -93,7 +92,7 @@ function FormInscricao() {
 
       setSuccessMessage('Candidatura cadastrada com sucesso!');
       setTimeout(() => {
-        window.location.reload(); // Recarrega a página após 1 segundo
+        window.location.reload();
       }, 1000);
     } catch (error) {
       console.error('Erro ao cadastrar candidatura:', error);
@@ -126,19 +125,19 @@ function FormInscricao() {
               labelId="vagas-label"
               id="vagas"
               multiple
-              value={vagasSelecionadas}
-              onChange={(e) => setVagasSelecionadas(e.target.value)}
+              value={vagasSelecionadas.map(vaga => vaga.id)} 
+              onChange={(e) => setVagasSelecionadas(e.target.value.map(id => cargosDisponiveis.find(cargo => cargo.id === id)))} 
               renderValue={(selected) => (
                 <div>
-                  {selected.map((value) => (
-                    <span key={value.id}>{value.cargo}, </span>
+                  {selected.map((id) => (
+                    <span key={id}>{cargosDisponiveis.find(cargo => cargo.id === id).cargo}, </span>
                   ))}
                 </div>
               )}
               size="small"
             >
               {cargosDisponiveis.map(cargo => (
-                <MenuItem key={cargo.id} value={cargo}>
+                <MenuItem key={cargo.id} value={cargo.id}> 
                   <FormControlLabel
                     control={<Checkbox checked={vagasSelecionadas.some(vaga => vaga.id === cargo.id)} />}
                     label={cargo.cargo}
