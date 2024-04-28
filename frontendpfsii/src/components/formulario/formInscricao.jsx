@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -8,13 +10,14 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 
 function FormInscricao() {
   const [candidatos, setCandidatos] = useState([]);
-  const [candidatoSelecionado, setCandidatoSelecionado] = useState({});
+  const [candidatoSelecionado, setCandidatoSelecionado] = useState(null);
   const [data, setData] = useState('');
   const [vagasSelecionadas, setVagasSelecionadas] = useState([]);
   const [dataAtual, setDataAtual] = useState('');
   const [cargosDisponiveis, setCargosDisponiveis] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
-  const [inscricoes, setInscricoes] = useState([]); 
+  const [inscricoes, setInscricoes] = useState([]);
+  const [termoBusca, setTermoBusca] = useState('');
 
   useEffect(() => {
     const currentDate = new Date();
@@ -61,7 +64,7 @@ function FormInscricao() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    const cpf = candidatoSelecionado.cpf || '';
+    const cpf = candidatoSelecionado?.cpf || '';
     const finalData = data || dataAtual;
 
     const candidaturaExistente = inscricoes.find(candidatura => candidatura.cpf === cpf && vagasSelecionadas.some(vaga => candidatura.vagas.find(v => v.id_vaga === vaga.id)));
@@ -99,6 +102,16 @@ function FormInscricao() {
     }
   };
 
+  // Função para lidar com a busca de candidatos
+  const handleBusca = (e) => {
+    const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    setTermoBusca(termo);
+  };
+
+  const candidatosFiltrados = candidatos.filter(candidato =>
+    candidato.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termoBusca)
+  );
+
   return (
     <div className="container">
       <br />
@@ -108,12 +121,17 @@ function FormInscricao() {
         <form onSubmit={handleSubmit} className="col-6">
           <div className="mb-3">
             <label htmlFor="candidato" className="form-label">Candidato</label>
-            <select id="candidato" className="form-select mb-3" value={candidatoSelecionado.cpf || ''} onChange={(e) => setCandidatoSelecionado(candidatos.find(c => c.cpf === e.target.value) || {})}>
-              <option value="">Selecione um candidato</option>
-              {candidatos.map(candidato => (
-                <option key={candidato.cpf} value={candidato.cpf}>{candidato.nome}</option>
-              ))}
-            </select>
+            <Autocomplete
+              id="candidato"
+              options={candidatosFiltrados}
+              getOptionLabel={(option) => option.nome}
+              value={candidatoSelecionado}
+              onChange={(event, newValue) => {
+                setCandidatoSelecionado(newValue);
+              }}
+              size="small"
+              renderInput={(params) => <TextField {...params} label="Buscar candidato..." variant="outlined" onChange={handleBusca} />}
+            />
           </div>
           <div className="mb-3">
             <label htmlFor="data" className="form-label">Data</label>
